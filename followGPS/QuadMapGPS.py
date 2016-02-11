@@ -32,8 +32,8 @@ class client(Thread):
                 gps = pos[1:].split(',')
                 GotoModeA(gps)
             elif pos[0] == 'B' :
-				gps_points = pos[1:].split('B')
-				GotoModeB(gps_points)
+		gps_points = pos[1:].split('B')
+		GotoModeB(gps_points)
             else :
                 ModeLand()
             self.sock.send(str(vehicle.location.global_relative_frame.lat)+','+str(vehicle.location.global_relative_frame.lon)+'\n')
@@ -60,7 +60,7 @@ if not args.connect:
     from dronekit_sitl import SITL
     sitl = SITL()
     sitl.download('copter', '3.3', verbose=True)
-    sitl_args = ['-I0', '--model', 'quad', '--home=-35.361361,149.165230,584,353']
+    sitl_args = ['-I0', '--model', 'quad', '--home=-22.311361,87.3065230,584,3']
     sitl.launch(sitl_args, await_ready=True, restart=True)
     connection_string = 'tcp:127.0.0.1:5760'
 
@@ -115,7 +115,7 @@ def GotoModeA(gps_point):
     height = abs(vehicle.location.global_relative_frame.alt - float(gps_point[2]))
     dist = measure(vehicle.location.global_relative_frame.lat, vehicle.location.global_relative_frame.lon, gps_point[0], gps_point[1])
     print "Going towards next point (groundspeed set to 1 m/s) ..."
-    while (dist > 1 or height > 0.3)  :
+    while (dist > 1)  :
         point1 = LocationGlobalRelative(float(gps_point[0]), float(gps_point[1]), float(gps_point[2]))
         vehicle.simple_goto(point1, groundspeed=1) #Set quad speed 
         # printing the distance to go in meters
@@ -130,7 +130,7 @@ def GotoModeB(gps_points):
 		height = abs(vehicle.location.global_relative_frame.alt - float(gps_point[2]))
 		dist = measure(vehicle.location.global_relative_frame.lat, vehicle.location.global_relative_frame.lon, gps_point[0], gps_point[1])
 		print "Going towards next point (groundspeed set to 5 m/s) ..."
-        while (dist > 1 or height > 0.3):
+        while (dist > 1):
             point1 = LocationGlobalRelative(float(gps_point[0]), float(gps_point[1]), float(gps_point[2]))
             vehicle.simple_goto(point1, groundspeed=5) 
             # printing the distance to go in meters
@@ -144,20 +144,20 @@ def ModeLand():
     connected = False
 
 def main():
-    arm_and_takeoff(2)
     serversocket.listen(5)
     print ('server started and listening')
     while not connected:
         clientsocket, address = serversocket.accept()
         client(clientsocket, address)
         Thread(target=sent,args=(clientsocket,)).start()
+    arm_and_takeoff(2)
     print "Set default/target airspeed to 1"
     vehicle.airspeed = 1
 
     bool_reached = True
     while connected:
         #gps_point = getGPS()
-        time.sleep(3)
+        time.sleep(1)
 			
 
     # Close vehicle object before exiting script
